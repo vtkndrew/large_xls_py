@@ -439,11 +439,18 @@ def copy_sheet_properties(ws_source, ws_target) -> None:
         ws_source: исходный worksheet
         ws_target: целевой worksheet
     """
-    # Ширина столбцов
-    for col_letter in ws_source.column_dimensions:
-        if ws_source.column_dimensions[col_letter].width:
-            ws_target.column_dimensions[col_letter].width = \
-                ws_source.column_dimensions[col_letter].width
+    # Ширина столбцов - копируем через индексы для надёжности
+    # Проходим по всем столбцам в исходном файле
+    from openpyxl.utils import get_column_letter
+    
+    for col_idx in range(1, ws_source.max_column + 1):
+        col_letter = get_column_letter(col_idx)
+        
+        # Проверяем есть ли установленная ширина в исходном файле
+        if col_letter in ws_source.column_dimensions:
+            source_width = ws_source.column_dimensions[col_letter].width
+            if source_width:
+                ws_target.column_dimensions[col_letter].width = source_width
     
     # Автофильтры
     if ws_source.auto_filter and ws_source.auto_filter.ref:
